@@ -1,0 +1,12 @@
+{
+  "parts": [
+    {
+      "implements": "part:@sanity/base/tool",
+      "path": "./dist/sanity-plugin-instagram.cjs.js"
+    },
+    {
+      "implements": "part:@sanity/form-builder/input/image/asset-source",
+      "path": "./dist/sanity-plugin-instagram.cjs.js"
+    }
+  ]
+}
