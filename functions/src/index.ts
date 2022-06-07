@@ -9,9 +9,15 @@ interface InstagramSettings {
   redirectUrl: string | null;
 }
 
-interface InstagramToken {
+interface InstagramShortLivedToken {
   access_token?: string;
   user_id?: string;
+}
+
+interface InstagramLongLivedToken {
+  access_token: string;
+  token_type: "bearer";
+  expires_in: number;
 }
 
 export const loginToInstagram = functions.https.onRequest(
@@ -45,16 +51,20 @@ export const loginToInstagram = functions.https.onRequest(
       formData.set("grant_type", "authorization_code");
       formData.set("code", code as string);
 
-      const { data } = await axios.post<InstagramToken>(
+      const { data: shortData } = await axios.post<InstagramShortLivedToken>(
         "https://api.instagram.com/oauth/access_token",
         formData
+      );
+
+      const { data } = await axios.get<InstagramLongLivedToken>(
+        `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${shortData.access_token}`
       );
 
       await client
         .patch("instagram.settings")
         .set({
           accessToken: data.access_token,
-          userId: data.user_id,
+          userId: shortData.user_id,
         })
         .commit();
 
