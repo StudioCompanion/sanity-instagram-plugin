@@ -12,7 +12,7 @@ export const loadSettings: SettingsSlice<LoadSettings> = (set) => async () => {
         *[_type == $type][0]{
             clientId,
             redirectUrl,
-            appSecret,
+            clientSecret,
             token
         }
     `

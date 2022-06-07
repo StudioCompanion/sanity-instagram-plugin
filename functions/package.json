@@ -2,7 +2,7 @@
   "name": "functions",
   "scripts": {
     "build": "tsc",
-    "serve": "npm run build && firebase emulators:start --only functions",
+    "serve": "tsc --watch | firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
@@ -13,12 +13,15 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@sanity/client": "^3.3.1",
+    "axios": "^0.27.2",
     "firebase-admin": "^10.0.2",
-    "firebase-functions": "^3.18.0"
+    "firebase-functions": "^3.18.0",
+    "groq": "^2.29.3"
   },
   "devDependencies": {
-    "typescript": "^4.5.4",
-    "firebase-functions-test": "^0.2.0"
+    "firebase-functions-test": "^0.2.0",
+    "typescript": "^4.5.4"
   },
   "private": true
 }
