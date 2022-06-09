@@ -6,12 +6,14 @@ import {
   ToastProvider,
   studioTheme,
 } from '@sanity/ui'
+import { withRouterHOC } from '@sanity/state-router/components'
 import { Header } from './components/Header'
 
 import { useStore } from './store'
 import { DialogSettings } from './components/Dialogs/DialogSettings'
+import { GridImageBrowser } from './components/Grids/GridImageBrowser'
 
-export const Instagram = () => {
+const InstagramApp = () => {
   const showSettingsDialog = useStore((state) => state.showSettingsDialog)
   const loadSettings = useStore((state) => state.loadSettings)
 
@@ -31,7 +33,9 @@ export const Instagram = () => {
                 direction="column"
                 flex={1}
                 style={{ position: 'relative' }}
-              ></Flex>
+              >
+                <GridImageBrowser />
+              </Flex>
             </Flex>
           </Flex>
         </Card>
@@ -40,3 +44,5 @@ export const Instagram = () => {
     </ThemeProvider>
   )
 }
+
+export const Instagram = withRouterHOC(InstagramApp)

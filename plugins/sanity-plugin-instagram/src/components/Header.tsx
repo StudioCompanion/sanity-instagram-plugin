@@ -2,8 +2,10 @@ import * as React from 'react'
 import styled from 'styled-components'
 import { Button, Inline } from '@sanity/ui'
 
-import { InstagramLoginButton } from './InstagramLoginButton'
 import { useStore } from '../store'
+
+import { ButtonInstagramLogin } from './Buttons/ButtonInstagramLogin'
+import { ButtonUploadInstagramImages } from './Buttons/ButtonUploadInstagramImages'
 
 export const Header = () => {
   const setShowSettingsDialog = useStore((state) => state.setShowSettingsDialog)
@@ -15,7 +17,8 @@ export const Header = () => {
   return (
     <Head>
       <Inline space={[2, 2, 3]}>
-        <InstagramLoginButton />
+        <ButtonInstagramLogin />
+        <ButtonUploadInstagramImages />
         <Button
           fontSize={[1, 1, 2]}
           mode="ghost"

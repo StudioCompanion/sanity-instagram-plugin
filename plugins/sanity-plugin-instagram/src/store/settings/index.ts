@@ -31,7 +31,7 @@ export type SettingsSlice<TReturn = SettingsState> = CreateSlice<
   TReturn
 >
 
-export const createSettingsState: SettingsSlice<SettingsState> = (...args) => {
+export const createSettingsState: SettingsSlice = (...args) => {
   const [set] = args
   return {
     showSettingsDialog: false,
