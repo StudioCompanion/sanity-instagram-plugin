@@ -1,13 +1,18 @@
 import * as React from 'react'
 import styled from 'styled-components'
-import { Button, Inline } from '@sanity/ui'
+import { Box, Button, Inline } from '@sanity/ui'
 
 import { useStore } from '../store'
 
 import { ButtonInstagramLogin } from './Buttons/ButtonInstagramLogin'
 import { ButtonUploadInstagramImages } from './Buttons/ButtonUploadInstagramImages'
+import { CloseIcon } from '@sanity/icons'
 
-export const Header = () => {
+interface HeaderProps {
+  onClose?: () => void
+}
+
+export const Header = ({ onClose }: HeaderProps) => {
   const setShowSettingsDialog = useStore((state) => state.setShowSettingsDialog)
 
   const handleSettingsClick = () => {
@@ -26,6 +31,18 @@ export const Header = () => {
           text="Settings"
           onClick={handleSettingsClick}
         />
+        {/* Close */}
+        {onClose && (
+          <Box style={{ flexShrink: 0 }}>
+            <Button
+              disabled={!onClose}
+              icon={CloseIcon}
+              mode="bleed"
+              onClick={onClose}
+              radius={2}
+            />
+          </Box>
+        )}
       </Inline>
     </Head>
   )

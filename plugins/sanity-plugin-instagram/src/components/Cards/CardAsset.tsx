@@ -1,18 +1,36 @@
 import * as React from 'react'
-import { Card } from '@sanity/ui'
 import styled from 'styled-components'
+
 import { InstgaramAsset } from '../../services/Assets'
+import { useAssetSourceActions } from '../../contexts/AssetSourceDispatchContext'
 
 export const CardAsset = ({
   url,
   description,
   instagramPost,
+  _id,
 }: InstgaramAsset) => {
+  const { onSelect } = useAssetSourceActions()
+
   if (!url) {
     return null
   }
+
+  const handleAssetClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation()
+
+    if (onSelect && _id) {
+      onSelect([
+        {
+          kind: 'assetDocumentId',
+          value: _id,
+        },
+      ])
+    }
+  }
+
   return (
-    <div>
+    <div onClick={handleAssetClick}>
       <Image src={url} />
       <p>{description}</p>
       {instagramPost ? (

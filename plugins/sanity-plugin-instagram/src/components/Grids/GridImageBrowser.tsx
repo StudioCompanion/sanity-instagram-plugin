@@ -1,11 +1,16 @@
 import * as React from 'react'
-import { Grid } from '@sanity/ui'
+import { Card, Flex, Grid } from '@sanity/ui'
 import { useStore } from '../../store'
 import { InstgaramAsset } from '../../services/Assets'
 import { CardAsset } from '../Cards/CardAsset'
 import styled from 'styled-components'
+import { Header } from '../Header'
 
-export const GridImageBrowser = () => {
+interface GridImageBrowserProps {
+  onClose?: () => void
+}
+
+export const GridImageBrowser = ({ onClose }: GridImageBrowserProps) => {
   const [items, setItems] = React.useState<InstgaramAsset[]>([])
 
   const assetServices = useStore((state) => state.assetsService)
@@ -18,11 +23,25 @@ export const GridImageBrowser = () => {
   }, [assetServices])
 
   return (
-    <BrowserGrid>
-      {items.map((asset) => (
-        <CardAsset key={asset._id} {...asset} />
-      ))}
-    </BrowserGrid>
+    <Card display="flex" height="fill">
+      <Flex direction="column" flex={1}>
+        <Header onClose={onClose} />
+        <Flex flex={1}>
+          <Flex
+            align="flex-end"
+            direction="column"
+            flex={1}
+            style={{ position: 'relative' }}
+          >
+            <BrowserGrid>
+              {items.map((asset) => (
+                <CardAsset key={asset._id} {...asset} />
+              ))}
+            </BrowserGrid>
+          </Flex>
+        </Flex>
+      </Flex>
+    </Card>
   )
 }
 
