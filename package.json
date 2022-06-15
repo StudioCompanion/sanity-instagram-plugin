@@ -1,29 +1,44 @@
 {
-  "name": "instagramplugin",
+  "name": "sanity-instagram-plugin--root",
   "private": true,
-  "version": "1.0.0",
-  "description": "",
-  "main": "package.json",
-  "author": "Josh <joshua.ellis18@gmail.com>",
-  "license": "UNLICENSED",
+  "repository": "StudioCompanion/sanity-plugin-instagram",
+  "license": "MIT",
+  "author": "Companion Studio Ltd",
+  "workspaces": {
+    "packages": [
+      "demo",
+      "functions",
+      "plugin"
+    ]
+  },
   "scripts": {
-    "start": "sanity start",
-    "build": "sanity build"
+    "demo:dev": "yarn workspace @instagram-plugin/demo start",
+    "function:dev": "yarn workspace @instagram-plugin/function serve",
+    "lint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache --fix",
+    "plugin:dev": "yarn workspace sanity-plugin-instagram dev",
+    "plugin:build": "yarn workspace sanity-plugin-instagram build",
+    "prepare": "husky install && yarn plugin:dev",
+    "prettier:write": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "test:ts": "tsc --noEmit"
   },
-  "keywords": [
-    "sanity"
-  ],
-  "dependencies": {
-    "@sanity/base": "^2.30.0",
-    "@sanity/core": "^2.30.0",
-    "@sanity/default-layout": "^2.30.0",
-    "@sanity/default-login": "^2.30.0",
-    "@sanity/desk-tool": "^2.30.0",
-    "@sanity/vision": "^2.30.0",
-    "prop-types": "^15.7",
-    "react": "^17.0",
-    "react-dom": "^17.0",
-    "styled-components": "^5.2.0"
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "body-max-line-length": [
+        0
+      ]
+    }
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@commitlint/cli": "^15.0.0",
+    "@commitlint/config-conventional": "^15.0.0",
+    "@parcel/packager-ts": "2.6.0",
+    "@parcel/transformer-typescript-types": "2.6.0",
+    "@studiocompanion/scripts": "^1.2.2",
+    "husky": "^7.0.4"
+  },
+  "packageManager": "yarn@3.2.1"
 }

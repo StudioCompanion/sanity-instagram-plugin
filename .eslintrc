@@ -1,0 +1,6 @@
+{
+  "parserOptions": {
+    "project": ["./plugin/tsconfig.json", "./demo/tsconfig.json"]
+  },
+  "extends": ["@studiocompanion/eslint-config"]
+}

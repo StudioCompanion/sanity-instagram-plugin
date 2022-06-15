@@ -33,12 +33,19 @@ export const loginToInstagram = functions.https.onRequest(
       }
     `;
 
+      if (
+        !process.env.SANITY_PROJECT_ID ||
+        !process.env.SANITY_PROJECT_DATASET ||
+        !process.env.SANITY_API_TOKEN
+      ) {
+        throw new Error("ENV has not been setup correctly");
+      }
+
       const client = sanityClient({
-        projectId: "ae1ddmef",
-        dataset: "production",
+        projectId: process.env.SANITY_PROJECT_ID,
+        dataset: process.env.SANITY_PROJECT_DATESET,
         useCdn: true,
-        token:
-          "skinJZtBnPHkGLO6sHxYPomcHH7ofJsk9E8te5xgqy9RBJThBc8uewpDL7GhffCalmDxezHDODcSmtyIpoJrSqXIU6OWn60HfhmooJKSwdJYG5cYv1PhL6p2vsZJQCFc023ScSXvSlzkL6oJcM9dtJmJpxD9xWL4JaFEGjkmcIxVlJP9UJmY",
+        token: process.env.SANITY_API_TOKEN,
       });
 
       const { clientSecret, clientId, redirectUrl } =
