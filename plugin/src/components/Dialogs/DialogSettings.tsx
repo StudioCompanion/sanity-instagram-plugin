@@ -1,53 +1,74 @@
 import * as React from 'react'
 import { Box, Button, Dialog, Flex, Stack } from '@sanity/ui'
+import { useSelector } from '@xstate/react'
+import { z, ZodError } from 'zod'
 
-import { useStore } from '../../store'
 import { FormInputText } from '../Forms/FormInputText'
-import { SettingsPayload } from '../../store/settings/createOrUpdateSettings'
-import { useSource } from 'sanity'
+
+import { useGlobalState } from '../../contexts/GlobalStateContext'
+
+const settingsFormSchema = z.object({
+  clientId: z
+    .string({ required_error: "Your app's ID is required" })
+    .min(1, "Your app's ID is required"),
+  clientSecret: z
+    .string({ required_error: "Your app's secret is required" })
+    .min(1, "Your app's secret is required"),
+  redirectUrl: z
+    .string({
+      required_error: "Your app's redirect uri is required",
+    })
+    .url('Your redirect url must be a URL'),
+})
 
 /**
  * TODO: add zod for form validation
  */
 export const DialogSettings = () => {
-  const [submittingForm, setSubmittingForm] = React.useState(false)
-  const formRef = React.useRef<HTMLDivElement>(null!)
-  const { client } = useSource()
+  const [formErrors, setFormErrors] = React.useState({
+    clientId: '',
+    clientSecret: '',
+    redirectUrl: '',
+  })
 
-  const setShowSettingsDialog = useStore((state) => state.setShowSettingsDialog)
-  const createOrUpdateSettings = useStore(
-    (state) => state.createOrUpdateSettings
+  const formRef = React.useRef<HTMLDivElement>(null!)
+
+  const globalState = useGlobalState()
+  const { send } = globalState
+
+  const isSavingSettings = useSelector(globalState, (state) =>
+    state.matches('settings.settingsSaving')
   )
-  const { clientId, clientSecret, redirectUrl } = useStore(
-    (state) => state.settings ?? {}
-  )
+
+  const settings = useSelector(globalState, (state) => state.context.settings)
 
   const handleDialogClose = () => {
-    setShowSettingsDialog(() => false)
+    send('SETTINGS_HIDE')
   }
 
-  const handleFormData = async (formData: FormData) => {
+  const handleFormData = (formData: FormData) => {
     try {
-      setSubmittingForm(true)
-
       const payload: Record<string, FormDataEntryValue> = {}
 
       formData.forEach((val, key) => (payload[key] = val))
 
-      // TODO: type this better so we don't force it.
-      await createOrUpdateSettings(
-        payload as unknown as SettingsPayload,
-        client
-      )
+      const parsedPayload = settingsFormSchema.parse(payload)
 
-      setSubmittingForm(false)
-      setShowSettingsDialog(() => false)
+      send({ type: 'SETTINGS_SAVING', payload: parsedPayload })
     } catch (err) {
-      /**
-       * TODO: add a toast pop-up
-       */
-      console.error(err)
-      setSubmittingForm(false)
+      if (err instanceof ZodError) {
+        const zodErrors = err.issues.reduce((acc, issue) => {
+          const input = issue.path
+            .slice(-1)[0]
+            .toString() as keyof typeof formErrors
+
+          acc[input] = issue.message
+
+          return acc
+        }, {} as typeof formErrors)
+
+        setFormErrors((s) => ({ ...s, ...zodErrors }))
+      }
     }
   }
 
@@ -72,7 +93,7 @@ export const DialogSettings = () => {
       onClose={handleDialogClose}
       footer={
         <DialogSettingsFooter
-          submittingForm={submittingForm}
+          isSavingSettings={isSavingSettings}
           onClick={handleSaveClick}
         />
       }
@@ -85,23 +106,26 @@ export const DialogSettings = () => {
           <FormInputText
             label="Application ID"
             name="clientId"
-            disabled={submittingForm}
+            disabled={isSavingSettings}
             description="This will be the Instagram app ID"
-            value={clientId}
+            value={settings?.clientId}
+            error={formErrors.clientId}
           />
           <FormInputText
             label="Application Secret"
             name="clientSecret"
-            value={clientSecret}
-            disabled={submittingForm}
+            value={settings?.clientSecret}
+            disabled={isSavingSettings}
             description="This will be your Instgram app secret, it will not show again."
+            error={formErrors.clientSecret}
           />
           <FormInputText
             label="Redirect URL"
             name="redirectUrl"
-            value={redirectUrl}
-            disabled={submittingForm}
+            value={settings?.redirectUrl}
+            disabled={isSavingSettings}
             description="Where the auth should redirect too, this should be the exact same as defined in your app"
+            error={formErrors.redirectUrl}
           />
         </Stack>
       </Box>
@@ -111,17 +135,17 @@ export const DialogSettings = () => {
 
 interface DialogSettingsFooterProps {
   onClick: () => void
-  submittingForm: boolean
+  isSavingSettings: boolean
 }
 
 const DialogSettingsFooter = ({
   onClick,
-  submittingForm,
+  isSavingSettings,
 }: DialogSettingsFooterProps) => (
   <Box padding={3}>
     <Flex justify={'flex-end'}>
       <Button
-        disabled={submittingForm}
+        disabled={isSavingSettings}
         fontSize={1}
         text="Save"
         tone="primary"

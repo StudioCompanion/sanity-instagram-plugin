@@ -1,22 +1,22 @@
 import * as React from 'react'
 import styled from 'styled-components'
 import { Box, Button, Inline } from '@sanity/ui'
-
-import { useStore } from '../store'
+import { CloseIcon } from '@sanity/icons'
 
 import { ButtonInstagramLogin } from './Buttons/ButtonInstagramLogin'
 import { ButtonUploadInstagramImages } from './Buttons/ButtonUploadInstagramImages'
-import { CloseIcon } from '@sanity/icons'
+
+import { useGlobalState } from '../contexts/GlobalStateContext'
 
 interface HeaderProps {
   onClose?: () => void
 }
 
 export const Header = ({ onClose }: HeaderProps) => {
-  const setShowSettingsDialog = useStore((state) => state.setShowSettingsDialog)
+  const { send } = useGlobalState()
 
   const handleSettingsClick = () => {
-    setShowSettingsDialog((isCurrentShowing) => !isCurrentShowing)
+    send('SETTINGS_SHOW')
   }
 
   return (

@@ -1,9 +1,8 @@
 import * as React from 'react'
 import { Card, Flex, Grid } from '@sanity/ui'
-import { useStore } from '../../store'
-import { InstgaramAsset } from '../../services/Assets'
-import { CardAsset } from '../Cards/CardAsset'
 import styled from 'styled-components'
+
+// import { CardAsset } from '../Cards/CardAsset'
 import { Header } from '../Header'
 
 interface GridImageBrowserProps {
@@ -11,16 +10,16 @@ interface GridImageBrowserProps {
 }
 
 export const GridImageBrowser = ({ onClose }: GridImageBrowserProps) => {
-  const [items, setItems] = React.useState<InstgaramAsset[]>([])
+  // const [items, setItems] = React.useState<InstgaramAsset[]>([])
 
-  const assetServices = useStore((state) => state.assetsService)
+  // const assetServices = useStore((state) => state.assetsService)
 
-  React.useEffect(() => {
-    /**
-     * TODO: add loading // error states
-     */
-    assetServices.getAllInstagramAssets().then((items) => setItems(items))
-  }, [assetServices])
+  // React.useEffect(() => {
+  //   /**
+  //    * TODO: add loading // error states
+  //    */
+  //   assetServices.getAllInstagramAssets().then((items) => setItems(items))
+  // }, [assetServices])
 
   return (
     <Card display="flex" height="fill">
@@ -34,9 +33,9 @@ export const GridImageBrowser = ({ onClose }: GridImageBrowserProps) => {
             style={{ position: 'relative' }}
           >
             <BrowserGrid>
-              {items.map((asset) => (
+              {/* {items.map((asset) => (
                 <CardAsset key={asset._id} {...asset} />
-              ))}
+              ))} */}
             </BrowserGrid>
           </Flex>
         </Flex>

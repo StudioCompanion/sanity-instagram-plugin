@@ -3952,6 +3952,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/hoist-non-react-statics@npm:*":
+  version: 3.3.1
+  resolution: "@types/hoist-non-react-statics@npm:3.3.1"
+  dependencies:
+    "@types/react": "*"
+    hoist-non-react-statics: ^3.3.0
+  checksum: 2c0778570d9a01d05afabc781b32163f28409bb98f7245c38d5eaf082416fdb73034003f5825eb5e21313044e8d2d9e1f3fe2831e345d3d1b1d20bcd12270719
+  languageName: node
+  linkType: hard
+
 "@types/is-hotkey@npm:^0.1.1, @types/is-hotkey@npm:^0.1.7":
   version: 0.1.7
   resolution: "@types/is-hotkey@npm:0.1.7"
@@ -4141,6 +4151,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/styled-components@npm:^5.1.25":
+  version: 5.1.25
+  resolution: "@types/styled-components@npm:5.1.25"
+  dependencies:
+    "@types/hoist-non-react-statics": "*"
+    "@types/react": "*"
+    csstype: ^3.0.2
+  checksum: 60ce64f13283b01da54fd3a4c5703769d8575c979d5ec6b67ad124c2d4df980c9b96bb91af87e03f6447a816a5d2b0270c63eefad60cfa885091b594984525f5
+  languageName: node
+  linkType: hard
+
 "@types/unist@npm:*, @types/unist@npm:^2.0.0":
   version: 2.0.6
   resolution: "@types/unist@npm:2.0.6"
@@ -4292,6 +4313,25 @@ __metadata:
     react-refresh: ^0.13.0
     resolve: ^1.22.0
   checksum: 9e083e561145cad00bdd2bc93d56b7ec8e209a05c4a9ebce8d1891e88e74de7eda197934c716023a1642582f250e330da6269e0cd1dc2285762f628c82f32229
+  languageName: node
+  linkType: hard
+
+"@xstate/react@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@xstate/react@npm:3.0.0"
+  dependencies:
+    use-isomorphic-layout-effect: ^1.0.0
+    use-sync-external-store: ^1.0.0
+  peerDependencies:
+    "@xstate/fsm": ^2.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    xstate: ^4.31.0
+  peerDependenciesMeta:
+    "@xstate/fsm":
+      optional: true
+    xstate:
+      optional: true
+  checksum: 3ead5ce2bfda1ac3e6ebd1f1a842d3fcdf7236b11edb548d32e58979de7640a860747434704bace9911e01c9a5c9daa6e31b13a774b35f6b931ca338d722d7c5
   languageName: node
   linkType: hard
 
@@ -8134,7 +8174,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hoist-non-react-statics@npm:^3.0.0":
+"hoist-non-react-statics@npm:^3.0.0, hoist-non-react-statics@npm:^3.3.0":
   version: 3.3.2
   resolution: "hoist-non-react-statics@npm:3.3.2"
   dependencies:
@@ -12175,6 +12215,7 @@ __metadata:
     "@parcel/transformer-typescript-types": 2.6.0
     "@studiocompanion/scripts": ^1.2.2
     husky: ^7.0.4
+    typescript: ^4.7.3
   languageName: unknown
   linkType: soft
 
@@ -12186,6 +12227,8 @@ __metadata:
     "@sanity/incompatible-plugin": ^0.0.1-studio-v3.1
     "@sanity/plugin-kit": ^0.0.1-studio-v3.4
     "@sanity/ui": ^0.37.12
+    "@types/styled-components": ^5.1.25
+    "@xstate/react": ^3.0.0
     axios: ^0.27.2
     groq: ^2.29.3
     parcel: ^2.6.0
@@ -12194,7 +12237,8 @@ __metadata:
     rimraf: ^3.0.2
     sanity: 2.29.5-purple-unicorn.856
     styled-components: ^5.3.5
-    typescript: ^4.7.3
+    xstate: ^4.32.1
+    zod: ^3.17.3
     zustand: ^4.0.0-rc.1
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
@@ -13626,6 +13670,18 @@ sanity@dev-preview:
   languageName: node
   linkType: hard
 
+"use-isomorphic-layout-effect@npm:^1.0.0":
+  version: 1.1.2
+  resolution: "use-isomorphic-layout-effect@npm:1.1.2"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: a6532f7fc9ae222c3725ff0308aaf1f1ddbd3c00d685ef9eee6714fd0684de5cb9741b432fbf51e61a784e2955424864f7ea9f99734a02f237b17ad3e18ea5cb
+  languageName: node
+  linkType: hard
+
 "use-sidecar@npm:^1.1.2":
   version: 1.1.2
   resolution: "use-sidecar@npm:1.1.2"
@@ -13648,6 +13704,15 @@ sanity@dev-preview:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: 8993a0b642f91d7fcdbb02b7b3ac984bd3af4769686f38291fe7fcfe73dfb73d6c64d20dfb7e5e7fbf5a6da8f5392d6f8e5b00c243a04975595946e82c02b883
+  languageName: node
+  linkType: hard
+
+"use-sync-external-store@npm:^1.0.0":
+  version: 1.2.0
+  resolution: "use-sync-external-store@npm:1.2.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 5c639e0f8da3521d605f59ce5be9e094ca772bd44a4ce7322b055a6f58eeed8dda3c94cabd90c7a41fb6fa852210092008afe48f7038792fd47501f33299116a
   languageName: node
   linkType: hard
 
@@ -13989,6 +14054,13 @@ sanity@dev-preview:
   languageName: node
   linkType: hard
 
+"xstate@npm:^4.32.1":
+  version: 4.32.1
+  resolution: "xstate@npm:4.32.1"
+  checksum: c16298b2b3dab7689da99d5b1e5128d2ca3bf381f37c8cb95e4af83bb1044b9251629fc00758f7f31785a72c2ddddd26f602b2801e6068cd78373b7f6dd6c28b
+  languageName: node
+  linkType: hard
+
 "xtend@npm:^4.0.0, xtend@npm:~4.0.1":
   version: 4.0.2
   resolution: "xtend@npm:4.0.2"
@@ -14115,6 +14187,13 @@ sanity@dev-preview:
     compress-commons: ^4.1.0
     readable-stream: ^3.6.0
   checksum: 4a73da856738b0634700b52f4ab3fe0bf0a532bea6820ad962d0bda0163d2d5525df4859f89a7238e204a378384e12551985049790c1894c3ac191866e85887f
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.17.3":
+  version: 3.17.3
+  resolution: "zod@npm:3.17.3"
+  checksum: f74b5d8a307cbed734e7a4a7f57a0c6b0a2d5062adee25e86eceaa1bec606621d6861804130f53342dec2d6e77fe9365f3a5118d55c81688f69f3de5fd3e59af
   languageName: node
   linkType: hard
 
