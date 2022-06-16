@@ -1,6 +1,5 @@
 {
   "name": "sanity-instagram-plugin--root",
-  "private": true,
   "repository": "StudioCompanion/sanity-plugin-instagram",
   "license": "MIT",
   "author": "Companion Studio Ltd",

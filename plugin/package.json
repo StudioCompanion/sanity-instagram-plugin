@@ -4,7 +4,6 @@
   "description": "Sanity plugin to pull in and curate your instagram content",
   "author": "Companion Studio Ltd",
   "license": "MIT",
-  "private": true,
   "source": "./src/index.ts",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -26,6 +25,7 @@
     "prebuild": "npm run clean && plugin-kit verify-package --silent",
     "build": "parcel build --no-cache",
     "dev": "parcel watch",
+    "watch": "parcel watch",
     "link-watch": "plugin-kit link-watch",
     "prepublishOnly": "npm run build"
   },
@@ -63,5 +63,13 @@
   "bugs": {
     "url": "https://github.com/StudioCompanion/sanity-instagram-plugin/issues"
   },
-  "homepage": "https://github.com/StudioCompanion/sanity-instagram-plugin#readme"
+  "homepage": "https://github.com/StudioCompanion/sanity-instagram-plugin#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "sanityPlugin": {
+    "verifyPackage": {
+      "tsconfig": false
+    }
+  }
 }
