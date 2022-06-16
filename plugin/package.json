@@ -34,6 +34,7 @@
     "url": "git+ssh://git@github.com/StudioCompanion/sanity-instagram-plugin.git"
   },
   "dependencies": {
+    "@sanity/client": "^3.3.2",
     "@sanity/icons": "^1.3.0",
     "@sanity/incompatible-plugin": "^0.0.1-studio-v3.1",
     "@sanity/ui": "^0.37.12",

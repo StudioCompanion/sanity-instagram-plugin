@@ -3,6 +3,8 @@ import { createPlugin } from 'sanity'
 
 import { InstagramApp } from './app'
 
+export { createAndSaveLongLifeInstagramToken } from './function'
+
 const plugin = {
   title: 'Instagram',
   name: 'instagram',

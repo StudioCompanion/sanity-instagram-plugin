@@ -36,7 +36,7 @@ export class SettingsService {
             clientId,
             redirectUrl,
             clientSecret,
-            token
+            accessToken,
         }
       `
     const res = await this.client.fetch<Settings>(query, {
