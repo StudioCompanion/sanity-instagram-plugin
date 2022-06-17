@@ -29,6 +29,7 @@ export const Header = ({ onClose }: HeaderProps) => {
           mode="ghost"
           padding={[2, 2, 3]}
           text="Settings"
+          style={{ cursor: 'pointer' }}
           onClick={handleSettingsClick}
         />
         {/* Close */}

@@ -10,8 +10,30 @@ export const ButtonInstagramLogin = () => {
   const settings = useSelector(globalState, (state) => state.context.settings)
   const isLoggedIn = useSelector(
     globalState,
-    (state) => state.context.settings?.token
+    (state) => state.context.isLoggedIn
   )
+
+  const isLoggingOut = useSelector(globalState, (state) =>
+    state.matches('loggingOut')
+  )
+
+  const handleLogoutClick = () => {
+    globalState.send('LOGOUT')
+  }
+
+  if (isLoggedIn) {
+    return (
+      <Button
+        fontSize={[1, 1, 2]}
+        onClick={handleLogoutClick}
+        tone="critical"
+        padding={[2, 2, 3]}
+        style={{ cursor: 'pointer' }}
+        text={'Logout'}
+        disabled={isLoggingOut}
+      />
+    )
+  }
 
   const canLogin = Boolean(
     settings &&
@@ -27,17 +49,17 @@ export const ButtonInstagramLogin = () => {
   loginUrl.searchParams.set('scope', 'user_profile,user_media')
   loginUrl.searchParams.set('response_type', 'code')
 
-  const isDisabled = Boolean(!canLogin || isLoggedIn)
+  const isDisabled = !canLogin
 
   return (
     <Button
       fontSize={[1, 1, 2]}
       tone="primary"
       padding={[2, 2, 3]}
-      text={isLoggedIn ? 'Logged in' : 'Login'}
+      text={'Login'}
       as="a"
       href={loginUrl.toString()}
-      style={{ pointerEvents: isDisabled ? 'none' : 'auto' }}
+      style={{ pointerEvents: isDisabled ? 'none' : 'auto', cursor: 'pointer' }}
       disabled={isDisabled}
     />
   )

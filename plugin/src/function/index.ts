@@ -3,17 +3,13 @@ import sanityClient from '@sanity/client'
 import axios from 'axios'
 
 import { Settings } from '../services/Settings'
+import { InstagramLongLifeToken } from '../services/Auth'
+
 import { INSTAGRAM_SETTINGS_DOCUMENT_ID } from '../constants'
 
 interface InstagramShortLivedToken {
   access_token?: string
   user_id?: string
-}
-
-interface InstagramLongLivedToken {
-  access_token: string
-  token_type: 'bearer'
-  expires_in: number
 }
 
 interface ENV {
@@ -61,7 +57,7 @@ export const createAndSaveLongLifeInstagramToken = async (
     formData
   )
 
-  const { data } = await axios.get<InstagramLongLivedToken>(
+  const { data } = await axios.get<InstagramLongLifeToken>(
     `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${shortData.access_token}`
   )
 

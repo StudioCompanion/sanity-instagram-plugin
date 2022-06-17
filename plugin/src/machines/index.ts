@@ -1,6 +1,7 @@
 import { ToastContextValue } from '@sanity/ui'
 import { createMachine, MachineConfig, StateSchema } from 'xstate'
 import { send } from 'xstate/lib/actions'
+import { AuthService } from '../services/Auth'
 
 import {
   Settings,
@@ -10,8 +11,10 @@ import {
 
 export interface MachineContext {
   settingsService: SettingsService
+  authService: AuthService
   toast: ToastContextValue
   settings?: Settings
+  isLoggedIn: boolean
 }
 
 export type MachineEvents =
@@ -24,11 +27,14 @@ export type MachineEvents =
   | { type: 'SETTINGS_FAILED' }
   | { type: 'SETTINGS_IDLE' }
   | { type: 'SETTINGS_HIDE' }
+  | { type: 'LOGOUT' }
+  | { type: 'LOGGED_OUT' }
 
 export interface MachineSchema extends StateSchema {
   context: MachineContext
   states: {
     idle: object
+    loggingOut: object
     showingSettings: {
       states: {
         idle: object
@@ -43,12 +49,20 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
   initial: 'idle',
   context: {
     toast: null as unknown as ToastContextValue,
+    authService: null as unknown as AuthService,
     settingsService: null as unknown as SettingsService,
     settings: undefined,
+    isLoggedIn: false,
   },
   invoke: {
     id: 'start-up',
     src: async (ctx) => {
+      const accessToken = await ctx.authService.getAccessToken()
+
+      if (accessToken) {
+        ctx.isLoggedIn = true
+      }
+
       const res = await ctx.settingsService.getSettings()
       ctx.settings = res
     },
@@ -57,6 +71,35 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
     idle: {
       on: {
         SETTINGS_SHOW: 'showingSettings',
+        LOGOUT: 'loggingOut',
+      },
+    },
+    loggingOut: {
+      on: {
+        LOGGED_OUT: 'idle',
+      },
+      invoke: {
+        id: 'logout',
+        src: async (ctx) => {
+          await ctx.authService.logout()
+        },
+        onDone: {
+          actions: [
+            send((ctx) => {
+              ctx.toast.push({
+                closable: true,
+                status: 'success',
+                title: 'Logged out',
+              })
+
+              ctx.isLoggedIn = false
+
+              return {
+                type: 'LOGGED_OUT',
+              }
+            }),
+          ],
+        },
       },
     },
     showingSettings: {

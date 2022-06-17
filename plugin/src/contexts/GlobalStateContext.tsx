@@ -6,6 +6,7 @@ import { pluginMachine } from '../machines'
 import { SettingsService } from '../services/Settings'
 import { useClient } from 'sanity'
 import { useToast } from '@sanity/ui'
+import { AuthService } from '../services/Auth'
 
 type GlobalStateContext = InterpreterFrom<typeof pluginMachine>
 
@@ -25,6 +26,8 @@ export const GlobalStateProvider = (props: Props) => {
   const globalService = useInterpret(
     pluginMachine.withContext({
       toast,
+      isLoggedIn: false,
+      authService: new AuthService(client),
       settingsService: new SettingsService(client),
     })
   )

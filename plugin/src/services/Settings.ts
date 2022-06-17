@@ -7,14 +7,13 @@ export interface Settings {
   clientId?: string
   redirectUrl?: string
   clientSecret?: string
-  token?: string
 }
 
 export type UpdateSettingsPayload = Required<Omit<Settings, 'token'>>
 
 export class SettingsService {
-  client: SanityClient
-  settings?: Settings
+  protected client: SanityClient
+  protected settings?: Settings
 
   constructor(client: SanityClient) {
     this.client = client
@@ -36,7 +35,6 @@ export class SettingsService {
             clientId,
             redirectUrl,
             clientSecret,
-            accessToken,
         }
       `
     const res = await this.client.fetch<Settings>(query, {

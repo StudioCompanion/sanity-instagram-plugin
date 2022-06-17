@@ -1,15 +1,7 @@
-import groq from 'groq'
 import axios, { AxiosError } from 'axios'
 import { SanityClient } from '@sanity/client'
 
-import { INSTAGRAM_SETTINGS_DOCUMENT_ID } from '../constants'
-import { ErrorLevels, ErrorLog } from './Errors'
-
-export interface InstagramLongLifeToken {
-  access_token?: string
-  token_type?: 'bearer'
-  expires_in?: number
-}
+import { ErrorLog } from './Errors'
 
 export interface InstagramMedia {
   caption?: string
@@ -25,70 +17,6 @@ export class Instagram {
 
   constructor(client: SanityClient) {
     this.client = client
-  }
-
-  private getAccessTokenFromSanity = async (): Promise<string | null> => {
-    if (this.accessToken) {
-      return this.accessToken
-    }
-
-    const query = groq`
-          *[_type == "instagram.settings"][0]{
-              accessToken
-          }
-      `
-
-    const { accessToken } = await this.client.fetch<{
-      accessToken: string | null
-    }>(query)
-
-    this.accessToken = accessToken
-
-    return accessToken
-  }
-
-  private checkAccessTokenIsValidAndRevalidate = async (
-    accessToken: string
-  ): Promise<boolean> => {
-    try {
-      const { data } = await axios.get<InstagramLongLifeToken>(
-        `${Instagram.Endpoints.RefreshLongLife}?grant_type=ig_refresh_token&access_token=${accessToken}`
-      )
-
-      const { access_token } = data
-
-      if (!access_token) {
-        throw new Error()
-      } else {
-        await this.client
-          .patch(INSTAGRAM_SETTINGS_DOCUMENT_ID)
-          .set({
-            accessToken: access_token,
-          })
-          .commit()
-
-        return true
-      }
-    } catch (err) {
-      new ErrorLog('Access token is no longer valid', ErrorLevels.Warn)
-      return false
-    }
-  }
-
-  shouldUserBeLoggedIn = async (): Promise<boolean> => {
-    const token = await this.getAccessTokenFromSanity()
-
-    if (!token) {
-      return false
-    }
-
-    const isTokenValid = await this.checkAccessTokenIsValidAndRevalidate(token)
-
-    if (!isTokenValid) {
-      return false
-    }
-
-    return true
   }
 
   private recursivelyFetchImagesFromInstagram = async (
