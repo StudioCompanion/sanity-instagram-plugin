@@ -1,22 +1,30 @@
 import axios, { AxiosError } from 'axios'
-import { SanityClient } from '@sanity/client'
-
-import { ErrorLog } from './Errors'
 
 export interface InstagramMedia {
   caption?: string
   id?: string
-  media_type?: string
+  media_type?: 'VIDEO' | 'IMAGE'
   media_url?: string
   permalink?: string
 }
 
-export class Instagram {
-  accessToken: string | null = null
-  client: SanityClient
+export interface InstagramLongLifeToken {
+  access_token: string
+  token_type: 'bearer'
+  expires_in: number
+}
 
-  constructor(client: SanityClient) {
-    this.client = client
+export class InstagramService {
+  refreshLongLifeToken = async (accessToken: string) => {
+    const { data } = await axios.get<Partial<InstagramLongLifeToken>>(
+      `${InstagramService.Endpoints.RefreshLongLife}?grant_type=ig_refresh_token&access_token=${accessToken}`
+    )
+
+    if (data.access_token && typeof data.access_token === 'string') {
+      return data.access_token
+    } else {
+      return ''
+    }
   }
 
   private recursivelyFetchImagesFromInstagram = async (
@@ -31,7 +39,12 @@ export class Instagram {
           previous?: string
         }
       }>(url)
-      dataArray.push(...data.data)
+      /**
+       * TODO: I should be able to upload videos...?
+       */
+      dataArray.push(
+        ...data.data.filter((datum) => datum.media_type !== 'VIDEO')
+      )
 
       if (data.paging.next) {
         await this.recursivelyFetchImagesFromInstagram(
@@ -52,19 +65,11 @@ export class Instagram {
    * stop to avoid overfetching and therefore avoid the overhead of
    * creating the blob and uploading it in our Assets service
    */
-  getImages = async (): Promise<InstagramMedia[]> => {
+  getImages = async (accessToken: string): Promise<InstagramMedia[]> => {
     try {
-      if (!this.accessToken) {
-        throw new Error(
-          ErrorLog.message(
-            'No access token available, unable to fetch images, are you sure you are logged in?'
-          )
-        )
-      }
+      const url = new URL(InstagramService.Endpoints.MyMedia)
 
-      const url = new URL(Instagram.Endpoints.MyMedia)
-
-      url.searchParams.set('access_token', this.accessToken)
+      url.searchParams.set('access_token', accessToken)
       url.searchParams.set('limit', '25')
       url.searchParams.set(
         'fields',

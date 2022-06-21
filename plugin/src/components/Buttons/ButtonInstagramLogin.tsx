@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Button } from '@sanity/ui'
 
-import { Instagram } from '../../services/Instagram'
+import { InstagramService } from '../../services/Instagram'
 import { useGlobalState } from '../../contexts/GlobalStateContext'
 import { useSelector } from '@xstate/react'
 
@@ -42,7 +42,7 @@ export const ButtonInstagramLogin = () => {
       settings.redirectUrl
   )
 
-  const loginUrl = new URL(Instagram.Endpoints.Authorize)
+  const loginUrl = new URL(InstagramService.Endpoints.Authorize)
 
   loginUrl.searchParams.set('client_id', settings?.clientId ?? '')
   loginUrl.searchParams.set('redirect_uri', settings?.redirectUrl ?? '')

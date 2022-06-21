@@ -1,9 +1,10 @@
+/* eslint-disable no-console */
 import groq from 'groq'
 import sanityClient from '@sanity/client'
 import axios from 'axios'
 
 import { Settings } from '../services/Settings'
-import { InstagramLongLifeToken } from '../services/Auth'
+import { InstagramLongLifeToken } from '../services/Instagram'
 
 import { INSTAGRAM_SETTINGS_DOCUMENT_ID } from '../constants'
 
@@ -20,7 +21,8 @@ interface ENV {
 
 export const createAndSaveLongLifeInstagramToken = async (
   code: string,
-  { projectId, dataset, apiToken }: ENV
+  { projectId, dataset, apiToken }: ENV,
+  debug = false
 ) => {
   const query = groq`
         *[_type == "instagram.settings"][0]{
@@ -57,17 +59,29 @@ export const createAndSaveLongLifeInstagramToken = async (
     formData
   )
 
+  if (debug) {
+    console.log('instagram repsonse for shortlife token', shortData)
+  }
+
   const { data } = await axios.get<InstagramLongLifeToken>(
     `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${shortData.access_token}`
   )
 
-  await client
+  if (debug) {
+    console.log('instagram response for longlife token', data)
+  }
+
+  const doc = await client
     .patch(INSTAGRAM_SETTINGS_DOCUMENT_ID)
     .set({
       accessToken: data.access_token,
       userId: shortData.user_id,
     })
     .commit()
+
+  if (debug) {
+    console.log('patched document', doc)
+  }
 
   return
 }

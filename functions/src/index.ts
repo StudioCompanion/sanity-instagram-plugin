@@ -6,11 +6,15 @@ export const loginToInstagram = functions.https.onRequest(
     try {
       const { code } = req.query
 
-      await createAndSaveLongLifeInstagramToken(code as string, {
-        projectId: process.env.SANITY_PROJECT_ID,
-        dataset: process.env.SANITY_PROJECT_DATESET,
-        apiToken: process.env.SANITY_API_TOKEN,
-      })
+      await createAndSaveLongLifeInstagramToken(
+        code as string,
+        {
+          projectId: process.env.SANITY_PROJECT_ID,
+          dataset: process.env.SANITY_PROJECT_DATESET,
+          apiToken: process.env.SANITY_API_TOKEN,
+        },
+        true
+      )
 
       response.redirect('http://localhost:3333/instagram')
 

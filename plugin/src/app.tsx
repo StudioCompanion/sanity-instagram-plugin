@@ -19,6 +19,7 @@ import {
   GlobalStateProvider,
   useGlobalState,
 } from './contexts/GlobalStateContext'
+import { ImageLoadingOverlay } from './components/Overlays/ImageLoadingOverlay'
 
 interface AppProps extends Omit<AssetSourceComponentProps, 'onSelect'> {
   onSelect: (assetFromSource: AssetFromSource[]) => void
@@ -29,6 +30,10 @@ const App = React.forwardRef<HTMLDivElement, AppProps>(({ onClose }, ref) => {
 
   const showSettings = useSelector(globalState, (state) =>
     state.matches('showingSettings')
+  )
+
+  const isUploadingImages = useSelector(globalState, (state) =>
+    state.matches('loadingImages')
   )
 
   const handleStopPropagation = (e: React.MouseEvent) => {
@@ -66,6 +71,7 @@ const App = React.forwardRef<HTMLDivElement, AppProps>(({ onClose }, ref) => {
         </Flex>
       )}
       {showSettings ? <DialogSettings /> : null}
+      {isUploadingImages ? <ImageLoadingOverlay /> : null}
     </>
   )
 })

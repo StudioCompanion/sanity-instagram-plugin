@@ -1,26 +1,23 @@
 import { SanityClient } from '@sanity/client'
-import axios from 'axios'
 import groq from 'groq'
+
 import { INSTAGRAM_SETTINGS_DOCUMENT_ID } from '../constants'
+
 import { ErrorLevels, ErrorLog } from './Errors'
-import { Instagram } from './Instagram'
+import { InstagramService } from './Instagram'
 
-export interface InstagramLongLifeToken {
-  access_token: string
-  token_type: 'bearer'
-  expires_in: number
-}
-
-export class AuthService {
+export class AuthService extends InstagramService {
   protected client: SanityClient
 
   private accessToken: string | null = null
 
   constructor(client: SanityClient) {
+    super()
+
     this.client = client
 
     this.getAccessToken().then((token) => {
-      if (token) {
+      if (token && typeof token === 'string') {
         this.refreshAccessToken()
       }
     })
@@ -32,16 +29,20 @@ export class AuthService {
     }
 
     const query = groq`
-        *[_type == $type][0].accessToken
+        *[_type == $type][0]{
+          accessToken
+        }
     `
 
-    const token = await this.client.fetch<string | null>(query, {
+    const { accessToken } = await this.client.fetch<{
+      accessToken: string | null
+    }>(query, {
       type: INSTAGRAM_SETTINGS_DOCUMENT_ID,
     })
 
-    this.accessToken = token
+    this.accessToken = accessToken || null
 
-    return token
+    return accessToken
   }
 
   /**
@@ -49,19 +50,19 @@ export class AuthService {
    */
   private refreshAccessToken = async () => {
     try {
-      const { data } = await axios.get<Partial<InstagramLongLifeToken>>(
-        `${Instagram.Endpoints.RefreshLongLife}?grant_type=ig_refresh_token&access_token=${this.accessToken}`
-      )
+      if (!this.accessToken) {
+        return
+      }
 
-      const { access_token } = data
+      const newToken = await this.refreshLongLifeToken(this.accessToken)
 
-      if (!access_token) {
+      if (!newToken) {
         throw new Error()
       } else {
         await this.client
           .patch(INSTAGRAM_SETTINGS_DOCUMENT_ID)
           .set({
-            accessToken: access_token,
+            accessToken: newToken,
           })
           .commit()
       }

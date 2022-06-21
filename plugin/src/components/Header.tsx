@@ -1,6 +1,5 @@
 import * as React from 'react'
-import styled from 'styled-components'
-import { Box, Button, Inline } from '@sanity/ui'
+import { Box, Button, Flex, Inline } from '@sanity/ui'
 import { CloseIcon } from '@sanity/icons'
 
 import { ButtonInstagramLogin } from './Buttons/ButtonInstagramLogin'
@@ -20,37 +19,33 @@ export const Header = ({ onClose }: HeaderProps) => {
   }
 
   return (
-    <Head>
-      <Inline space={[2, 2, 3]}>
+    <Box as="header" paddingX={3} paddingY={2}>
+      <Flex justify="space-between" width="100%">
         <ButtonInstagramLogin />
-        <ButtonUploadInstagramImages />
-        <Button
-          fontSize={[1, 1, 2]}
-          mode="ghost"
-          padding={[2, 2, 3]}
-          text="Settings"
-          style={{ cursor: 'pointer' }}
-          onClick={handleSettingsClick}
-        />
-        {/* Close */}
-        {onClose && (
-          <Box style={{ flexShrink: 0 }}>
-            <Button
-              disabled={!onClose}
-              icon={CloseIcon}
-              mode="bleed"
-              onClick={onClose}
-              radius={2}
-            />
-          </Box>
-        )}
-      </Inline>
-    </Head>
+        <Inline space={[2, 2, 3]}>
+          <ButtonUploadInstagramImages />
+          <Button
+            fontSize={[1, 1, 2]}
+            mode="ghost"
+            padding={[2, 2, 3]}
+            text="Settings"
+            style={{ cursor: 'pointer' }}
+            onClick={handleSettingsClick}
+          />
+          {/* Close */}
+          {onClose && (
+            <Box style={{ flexShrink: 0 }}>
+              <Button
+                disabled={!onClose}
+                icon={CloseIcon}
+                mode="bleed"
+                onClick={onClose}
+                radius={2}
+              />
+            </Box>
+          )}
+        </Inline>
+      </Flex>
+    </Box>
   )
 }
-
-const Head = styled.header`
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 24px;
-`

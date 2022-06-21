@@ -7,6 +7,7 @@ import { SettingsService } from '../services/Settings'
 import { useClient } from 'sanity'
 import { useToast } from '@sanity/ui'
 import { AuthService } from '../services/Auth'
+import { AssetsService } from '../services/Assets'
 
 type GlobalStateContext = InterpreterFrom<typeof pluginMachine>
 
@@ -29,6 +30,7 @@ export const GlobalStateProvider = (props: Props) => {
       isLoggedIn: false,
       authService: new AuthService(client),
       settingsService: new SettingsService(client),
+      assetService: new AssetsService(client),
     })
   )
 

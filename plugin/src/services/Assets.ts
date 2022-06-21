@@ -1,8 +1,9 @@
 import groq from 'groq'
+import pThrottle from 'p-throttle'
 import type { SanityClient } from '@sanity/client'
 
 import { ErrorLevels, ErrorLog } from './Errors'
-import { Instagram, InstagramMedia } from './Instagram'
+import { InstagramService, InstagramMedia } from './Instagram'
 
 export interface InstgaramAsset {
   _id: string | null
@@ -13,30 +14,25 @@ export interface InstgaramAsset {
   url: string | null
 }
 
-export class Asset {
-  client: SanityClient
+export class AssetsService extends InstagramService {
+  protected client: SanityClient
 
   constructor(client: SanityClient) {
+    super()
+
     this.client = client
   }
 
-  /**
-   * TODO: this needs throttling
-   * Also they are done out of order if we use some metadata
-   * from instagram maybe we can solve how to put them in
-   * the correct order of newest post to oldest post
-   */
-  private uploadAsset = async (blob: Blob, media: InstagramMedia) => {
+  private uploadAsset = async (fullSizeBlob: Blob, media: InstagramMedia) => {
     try {
-      const doc = await this.client.assets.upload('image', blob, {
+      const doc = await this.client.assets.upload('image', fullSizeBlob, {
         extract: ['blurhash', 'exif', 'location', 'lqip', 'palette'],
-        tag: 'instagram',
         contentType: 'image/png',
         filename: `instagram-${media.id}.png`,
         description: media.caption,
         source: {
           id: media.id ?? '',
-          name: `instagram-${media.id}`,
+          name: `instagram`,
           url: media.permalink ?? '',
         },
       })
@@ -52,80 +48,135 @@ export class Asset {
     }
   }
 
-  getAllInstagramAssets = async (): Promise<InstgaramAsset[]> => {
-    try {
-      const instagramAssetQuery = groq`
-    *[_type == 'sanity.imageAsset' && opt.instagram == true][]{
-        _id,
-        description,
-        "name": source.name,
-        "instagramId": source.id,
-        "instagramPost": source.url,
-        url,
-    }
+  // getAllInstagramAssets = async (): Promise<InstgaramAsset[]> => {
+  //   try {
+  //     const instagramAssetQuery = groq`
+  //   *[_type == 'sanity.imageAsset' && opt.instagram == true][]{
+  //       _id,
+  //       description,
+  //       "name": source.name,
+  //       "instagramId": source.id,
+  //       "instagramPost": source.url,
+  //       url,
+  //   }
+  // `
+  //     const items = await this.client.fetch<InstgaramAsset[]>(
+  //       instagramAssetQuery
+  //     )
+
+  //     return items
+  //   } catch (err) {
+  //     new ErrorLog('failed to fetch instagram assets', ErrorLevels.Error)
+
+  //     return []
+  //   }
+  // }
+
+  pruneInstagramAssets = async (
+    images: InstagramMedia[]
+  ): Promise<InstagramMedia[]> => {
+    const currentlyStoredImagesQuery = groq`
+    *[_type == "sanity.imageAsset" && opt.instagram == true][].source.id
   `
-      const items = await this.client.fetch<InstgaramAsset[]>(
-        instagramAssetQuery
-      )
 
-      return items
-    } catch (err) {
-      new ErrorLog('failed to fetch instagram assets', ErrorLevels.Error)
+    const existingImages = await this.client.fetch<string[]>(
+      currentlyStoredImagesQuery
+    )
 
-      return []
+    interface InstagramAssetsWithIds extends Omit<InstagramMedia, 'id'> {
+      id: string
     }
+
+    return (
+      images.filter(
+        (img) => typeof img.id === 'string'
+      ) as InstagramAssetsWithIds[]
+    ).filter((img) => !existingImages.includes(img.id))
   }
 
-  uploadInstagramAssets = async (InstaService: Instagram) => {
-    try {
-      const images = await InstaService.getImages()
+  private createFullSizeBlobs = async (
+    images: HTMLImageElement[]
+  ): Promise<Blob[]> => {
+    /**
+     * Create canvas
+     */
+    const canvas = document.createElement('canvas')
 
-      /**
-       * Create canvas
-       */
-      const canvas = document.createElement('canvas')
+    const setCanvasDimensions = (img: HTMLImageElement) => {
+      canvas.style.height = `${img.height}px`
+      canvas.style.width = `${img.width}px`
+      canvas.height = img.height
+      canvas.width = img.width
+    }
 
-      const setCanvasDimensions = (img: HTMLImageElement) => {
-        canvas.style.height = `${img.height}px`
-        canvas.style.width = `${img.width}px`
-        canvas.height = img.height
-        canvas.width = img.width
-      }
+    /**
+     * Get the context
+     */
+    const ctx = canvas.getContext('2d')!
 
-      /**
-       * Get the context
-       */
-      const ctx = canvas.getContext('2d')!
+    /**
+     * Create the blobs
+     */
+    const maybeBlobs = await Promise.all(
+      images.map(
+        (img) =>
+          new Promise<Blob | null>((res) => {
+            {
+              setCanvasDimensions(img)
+              ctx.drawImage(img, 0, 0, img.width, img.height)
 
-      await Promise.all(
-        images.map(
-          (media) =>
-            new Promise((res) => {
-              {
-                if (!media.media_url) {
-                  return
-                }
-                const img = new Image()
-                img.crossOrigin = 'anonymous'
-                img.src = media.media_url
-                img.onload = () => {
-                  setCanvasDimensions(img)
-                  ctx.drawImage(img, 0, 0, img.width, img.height)
-
-                  canvas.toBlob(async (blob) => {
-                    if (blob) {
-                      await this.uploadAsset(blob, media)
-                    }
-
-                    res(true)
-                  })
-                }
-              }
-            })
-        )
+              canvas.toBlob(res, 'image/jpeg')
+            }
+          })
       )
+    )
 
-      canvas.remove()
-    } catch (err) {}
+    canvas.remove()
+
+    return maybeBlobs.filter((blob) => Boolean(blob)) as Blob[]
+  }
+
+  private createBlobs = async (
+    images: InstagramMedia[]
+  ): Promise<[fullSizeBlobs: Blob[]]> => {
+    const imgElements = await Promise.all(
+      images.map(
+        (asset) =>
+          new Promise<HTMLImageElement>((res) => {
+            if (!asset.media_url) {
+              return
+            }
+
+            const img = new Image()
+            img.crossOrigin = 'anonymous'
+            img.onload = () => res(img)
+            img.src = asset.media_url
+          })
+      )
+    )
+
+    const fullSizeBlobs = await this.createFullSizeBlobs(imgElements)
+
+    return [fullSizeBlobs]
+  }
+
+  uploadInstagramAssets = async (images: InstagramMedia[]) => {
+    const throttle = pThrottle({
+      limit: 20,
+      interval: 1000,
+    })
+
+    const [fullSizeBlobs] = await this.createBlobs(images)
+
+    /**
+     * Upload the assets throttled
+     */
+    await Promise.all(
+      fullSizeBlobs.map((blob, index) =>
+        throttle(async () => {
+          await this.uploadAsset(blob, images[index])
+        })()
+      )
+    )
   }
 }
