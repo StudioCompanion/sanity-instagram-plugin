@@ -66,7 +66,7 @@ const App = React.forwardRef<HTMLDivElement, AppProps>(({ onClose }, ref) => {
           </Box>
         </Portal>
       ) : (
-        <Flex direction="column" ref={ref}>
+        <Flex direction="column" ref={ref} height="fill">
           <GridImageBrowser />
         </Flex>
       )}
@@ -80,7 +80,7 @@ export const InstagramApp = React.forwardRef<HTMLDivElement, AppProps>(
   (props, ref) => (
     <AssetBrowserDispatchProvider onSelect={props.onSelect}>
       <PortalProvider element={document.body}>
-        <ThemeProvider theme={studioTheme} scheme="light">
+        <ThemeProvider theme={studioTheme}>
           <ToastProvider>
             <GlobalStateProvider>
               <App ref={ref} {...props} />

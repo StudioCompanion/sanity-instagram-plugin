@@ -19,7 +19,7 @@ export const Header = ({ onClose }: HeaderProps) => {
   }
 
   return (
-    <Box as="header" paddingX={3} paddingY={2}>
+    <Box as="header" paddingX={3} paddingY={3}>
       <Flex justify="space-between" width="100%">
         <ButtonInstagramLogin />
         <Inline space={[2, 2, 3]}>

@@ -2,7 +2,7 @@ import { ToastContextValue } from '@sanity/ui'
 import { createMachine, MachineConfig, StateSchema } from 'xstate'
 import { send } from 'xstate/lib/actions'
 
-import { AssetsService } from '../services/Assets'
+import { AssetsService, InstagramAsset } from '../services/Assets'
 import { AuthService } from '../services/Auth'
 import { InstagramMedia } from '../services/Instagram'
 
@@ -19,6 +19,9 @@ export interface MachineContext {
   toast: ToastContextValue
   settings?: Settings
   isLoggedIn: boolean
+  images: InstagramAsset[]
+  pageIndex: number
+  pageSize: number
 }
 
 export type MachineEvents =
@@ -37,12 +40,15 @@ export type MachineEvents =
   | { type: 'IMAGES_UPLOADED' }
   | { type: 'IMAGES_PRUNED'; images: InstagramMedia[] }
   | { type: 'IMAGES_COLLECTED'; images: InstagramMedia[] }
+  | { type: 'FETCH_ASSETS' }
+  | { type: 'FETCH_MORE_ASSETS' }
 
 export interface MachineSchema extends StateSchema {
   context: MachineContext
   states: {
     idle: object
     loggingOut: object
+    fetchMoreAssets: object
     showingSettings: {
       states: {
         idle: object
@@ -51,6 +57,7 @@ export interface MachineSchema extends StateSchema {
     }
     loadingImages: {
       states: {
+        fetch: object
         collecting: object
         pruning: object
         uploading: object
@@ -69,6 +76,9 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
     settingsService: null as unknown as SettingsService,
     settings: undefined,
     isLoggedIn: false,
+    images: [],
+    pageIndex: 0,
+    pageSize: 50,
   },
   invoke: {
     id: 'start-up',
@@ -81,6 +91,15 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
 
       const res = await ctx.settingsService.getSettings()
       ctx.settings = res
+
+      // await ctx.assetService.deleteAllAssets()
+
+      const images = await ctx.assetService.getInstagramAssets(
+        ctx.pageIndex,
+        ctx.pageSize
+      )
+
+      ctx.images = [...images]
     },
   },
   states: {
@@ -89,6 +108,7 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
         SETTINGS_SHOW: 'showingSettings',
         LOGOUT: 'loggingOut',
         LOAD_IMAGES: 'loadingImages',
+        FETCH_MORE_ASSETS: 'fetchMoreAssets',
       },
     },
     loggingOut: {
@@ -189,6 +209,28 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
       },
       initial: 'collecting',
       states: {
+        fetch: {
+          invoke: {
+            id: 'fetch-insta-assets-from-sanity',
+            src: async (ctx) => {
+              ctx.pageIndex = 0
+
+              const images = await ctx.assetService.getInstagramAssets(
+                0,
+                ctx.pageSize
+              )
+
+              ctx.images = images
+            },
+            onDone: {
+              actions: [
+                send({
+                  type: 'IMAGES_UPLOADED',
+                }),
+              ],
+            },
+          },
+        },
         collecting: {
           on: {
             IMAGES_COLLECTED: {
@@ -201,12 +243,12 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
               const accessToken = await ctx.authService.getAccessToken()
               let images: InstagramMedia[] = []
               if (accessToken) {
-                images = await ctx.authService.getImages(accessToken)
+                images = await ctx.assetService.getImages(accessToken)
               }
 
               callback({
                 type: 'IMAGES_COLLECTED',
-                images: images.slice(-3),
+                images,
               })
             },
             onError: {
@@ -265,6 +307,9 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
           },
         },
         uploading: {
+          on: {
+            FETCH_ASSETS: 'fetch',
+          },
           invoke: {
             id: 'upload-instagram-images',
             src: async (ctx, event) => {
@@ -282,7 +327,7 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
                   })
 
                   return {
-                    type: 'IMAGES_UPLOADED',
+                    type: 'FETCH_ASSETS',
                   }
                 }),
               ],
@@ -305,6 +350,25 @@ const Chart: MachineConfig<MachineContext, MachineSchema, MachineEvents> = {
             },
           },
         },
+      },
+    },
+    fetchMoreAssets: {
+      invoke: {
+        id: 'fetch-more-assets',
+        src: async (ctx) => {
+          const newPage = ctx.pageIndex + 1
+
+          const images = await ctx.assetService.getInstagramAssets(
+            newPage,
+            ctx.pageSize
+          )
+
+          ctx.pageIndex = newPage
+          ctx.images = [...ctx.images, ...images]
+        },
+      },
+      onDone: {
+        target: 'idle',
       },
     },
   },

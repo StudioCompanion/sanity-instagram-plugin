@@ -26,7 +26,7 @@ export const ButtonUploadInstagramImages = () => {
       tone="primary"
       padding={[2, 2, 3]}
       onClick={handleClick}
-      text={'Upload Instagram Images'}
+      text={'Import instagram images'}
       style={{
         cursor: isDisabled ? 'default' : 'pointer',
         pointerEvents: isDisabled ? 'none' : 'auto',

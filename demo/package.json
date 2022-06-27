@@ -14,7 +14,7 @@
   "dependencies": {
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "sanity": "dev-preview",
+    "sanity": "3.0.0-dev-preview.9",
     "sanity-plugin-instagram": "*",
     "styled-components": "^5.2.0"
   },

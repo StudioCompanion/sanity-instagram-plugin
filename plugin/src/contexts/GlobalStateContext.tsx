@@ -31,6 +31,9 @@ export const GlobalStateProvider = (props: Props) => {
       authService: new AuthService(client),
       settingsService: new SettingsService(client),
       assetService: new AssetsService(client),
+      images: [],
+      pageIndex: 0,
+      pageSize: 50,
     })
   )
 

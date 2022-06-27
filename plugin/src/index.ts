@@ -15,10 +15,14 @@ const plugin = {
 export const SanityInstagramPlugin = createPlugin<void>(() => {
   return {
     schema: [],
-    tools: [plugin],
+    tools: (prev) => {
+      return [...prev, plugin]
+    },
     formBuilder: {
       image: {
-        assetSources: [plugin],
+        assetSources: (prev) => {
+          return [...prev, plugin]
+        },
       },
     },
     name: 'sanity-instagram-plugin',

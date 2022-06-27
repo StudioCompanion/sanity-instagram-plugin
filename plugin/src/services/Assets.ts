@@ -1,17 +1,19 @@
 import groq from 'groq'
-import pThrottle from 'p-throttle'
 import type { SanityClient } from '@sanity/client'
 
 import { ErrorLevels, ErrorLog } from './Errors'
 import { InstagramService, InstagramMedia } from './Instagram'
 
-export interface InstgaramAsset {
+import pThrottle from '../helpers/pThrottle'
+
+export interface InstagramAsset {
   _id: string | null
   description: string | null
   name: string | null
   instagramId: string | null
   instagramPost: string | null
   url: string | null
+  title: string | null
 }
 
 export class AssetsService extends InstagramService {
@@ -27,8 +29,8 @@ export class AssetsService extends InstagramService {
     try {
       const doc = await this.client.assets.upload('image', fullSizeBlob, {
         extract: ['blurhash', 'exif', 'location', 'lqip', 'palette'],
-        contentType: 'image/png',
-        filename: `instagram-${media.id}.png`,
+        contentType: 'image/jpg',
+        filename: `${media.timestamp?.split('+')[0]}Z`,
         description: media.caption,
         source: {
           id: media.id ?? '',
@@ -48,29 +50,38 @@ export class AssetsService extends InstagramService {
     }
   }
 
-  // getAllInstagramAssets = async (): Promise<InstgaramAsset[]> => {
-  //   try {
-  //     const instagramAssetQuery = groq`
-  //   *[_type == 'sanity.imageAsset' && opt.instagram == true][]{
-  //       _id,
-  //       description,
-  //       "name": source.name,
-  //       "instagramId": source.id,
-  //       "instagramPost": source.url,
-  //       url,
-  //   }
-  // `
-  //     const items = await this.client.fetch<InstgaramAsset[]>(
-  //       instagramAssetQuery
-  //     )
+  getInstagramAssets = async (
+    pageIndex: number,
+    pageSize: number
+  ): Promise<InstagramAsset[]> => {
+    const start = pageIndex * pageSize
+    const end = start + pageSize
 
-  //     return items
-  //   } catch (err) {
-  //     new ErrorLog('failed to fetch instagram assets', ErrorLevels.Error)
+    try {
+      const instagramAssetQuery = groq`
+        *[_type == 'sanity.imageAsset' && opt.instagram == true] | order(dateTime(originalFilename) desc) [${start}...${end}]{
+            _id,
+            _createdAt,
+            description,
+            "title": originalFilename,
+            "name": source.name,
+            "instagramId": source.id,
+            "instagramPost": source.url,
+            url,
+        }
+      `
 
-  //     return []
-  //   }
-  // }
+      const items = await this.client.fetch<InstagramAsset[]>(
+        instagramAssetQuery
+      )
+
+      return items
+    } catch (err) {
+      new ErrorLog('failed to fetch instagram assets', ErrorLevels.Error)
+
+      return []
+    }
+  }
 
   pruneInstagramAssets = async (
     images: InstagramMedia[]
@@ -162,8 +173,8 @@ export class AssetsService extends InstagramService {
 
   uploadInstagramAssets = async (images: InstagramMedia[]) => {
     const throttle = pThrottle({
-      limit: 20,
-      interval: 1000,
+      limit: 10,
+      interval: 1100,
     })
 
     const [fullSizeBlobs] = await this.createBlobs(images)
@@ -178,5 +189,15 @@ export class AssetsService extends InstagramService {
         })()
       )
     )
+  }
+
+  /**
+   *
+   * @warning This method is not safe to use.
+   */
+  deleteAllAssets = async () => {
+    await this.client.delete({
+      query: groq`*[_type == "sanity.imageAsset" && opt.instagram == true]`,
+    })
   }
 }

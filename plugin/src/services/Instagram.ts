@@ -6,6 +6,8 @@ export interface InstagramMedia {
   media_type?: 'VIDEO' | 'IMAGE'
   media_url?: string
   permalink?: string
+  timestamp?: string
+  thumbnail_url?: string
 }
 
 export interface InstagramLongLifeToken {
@@ -43,7 +45,13 @@ export class InstagramService {
        * TODO: I should be able to upload videos...?
        */
       dataArray.push(
-        ...data.data.filter((datum) => datum.media_type !== 'VIDEO')
+        ...data.data.map((datum) => {
+          if (datum.media_type === 'VIDEO') {
+            return { ...datum, media_url: datum.thumbnail_url }
+          } else {
+            return datum
+          }
+        })
       )
 
       if (data.paging.next) {
@@ -73,7 +81,7 @@ export class InstagramService {
       url.searchParams.set('limit', '25')
       url.searchParams.set(
         'fields',
-        'caption,id,media_type,media_url,permalink,thumbnail_url'
+        'caption,id,media_type,media_url,permalink,thumbnail_url,timestamp'
       )
 
       const imageData: InstagramMedia[] = []
